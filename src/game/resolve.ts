@@ -77,15 +77,15 @@ export interface SelectionOption {
 
 export type AttackPrompt =
   | {
-      kind: "selection";
-      message: string;
-      options: SelectionOption[];
-    }
+    kind: "selection";
+    message: string;
+    options: SelectionOption[];
+  }
   | {
-      kind: "target";
-      message: string;
-      candidates: Entity[];
-    };
+    kind: "target";
+    message: string;
+    candidates: Entity[];
+  };
 
 export type PromptResponse = string;
 
@@ -136,30 +136,30 @@ function* resolveAttackFlow(
   );
   let targets = autoTargets;
   if (targets.length === 0) {
-  const candidates = getTargetCandidates(game, user, ability);
+    const candidates = getTargetCandidates(game, user, ability);
 
-  if (candidates.length === 0) {
-    result.messages.push(
-      `${user.num} uses ${ability.name} but no valid targets found.`,
-    );
-    return result;
+    if (candidates.length === 0) {
+      result.messages.push(
+        `${user.num} uses ${ability.name} but no valid targets found.`,
+      );
+      return result;
+    }
+
+    const targetRef = initialTarget ?? (yield {
+      kind: "target",
+      message: `Choose a target for ${ability.name}`,
+      candidates,
+    });
+
+    targets = findTargets(game, user, ability, targetRef);
+
+    if (targets.length === 0) {
+      result.messages.push(
+        `${user.num} uses ${ability.name} but no valid targets found.`,
+      );
+      return result;
+    }
   }
-
-  const targetRef = initialTarget ?? (yield {
-    kind: "target",
-    message: `Choose a target for ${ability.name}`,
-    candidates,
-  });
-
-  targets = findTargets(game, user, ability, targetRef);
-
-  if (targets.length === 0) {
-    result.messages.push(
-      `${user.num} uses ${ability.name} but no valid targets found.`,
-    );
-    return result;
-  }
-}
 
   const targetNames = targets.map((t) => t.num).join(", ");
   const rollStr = ability.roll ? ` ${ability.roll}` : "";
@@ -521,7 +521,7 @@ function resolveSingleTarget(
 }
 
 function setCooldown(entity: Entity, ability: AbilityData) {
-  const freq = ability.frequency.toLowerCase();
+  const freq = ability.frequency.split("/").pop().trim().toLowerCase();
   if (freq === "every turn" || freq === "passive") return;
   if (freq === "eot") {
     entity.cooldowns[ability.name] = 2;
@@ -711,7 +711,7 @@ export function resolveAction(
   const action = user.pendingAction;
 
   if (!action || action.type !== "attack") {
-    return { 
+    return {
       done: true,
       result: newResult()
     };

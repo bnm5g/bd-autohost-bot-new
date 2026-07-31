@@ -262,7 +262,7 @@ function handleAttack(game: Game, user: User, cmd: string, args: string) {
   if (entity.cooldowns[ability.name]) {
     return sendPm(
       user.name,
-      `${ability.name} is on cooldown (${entity.cooldowns[ability.name]} turns left).`,
+      `${ability.name} is on cooldown (${entity.cooldowns[ability.name]} rounds left).`,
     );
   }
 
@@ -278,7 +278,7 @@ function handleAttack(game: Game, user: User, cmd: string, args: string) {
   if (ability.actionType === "Standard" && entity.standardUsed) {
     return sendPm(user.name, "You already used your Standard action.");
   }
-  if (ability.actionType === "Swift" && entity.swiftUsed) {
+  if ((ability.actionType === "Swift" || ability.actionType === "Free") && entity.swiftUsed) {
     return sendPm(user.name, "You already used your Swift action this turn.");
   }
   if (
@@ -338,27 +338,27 @@ function handleConfirm(game: Game, user: User) {
   pushSnapshot(game);
   const step = resolveAction(game, entity);
 
-if (step.done === false) {
-  send(
-    game.room,
-    `${entity.num}: ${step.prompt.message}`,
-  );
-
-  if (step.prompt.kind === "target") {
+  if (step.done === false) {
     send(
       game.room,
-      `Use %target <target>. Options: ${step.prompt.candidates.map(e => e.num).join(", ")}`
+      `${entity.num}: ${step.prompt.message}`,
     );
+
+    if (step.prompt.kind === "target") {
+      send(
+        game.room,
+        `Use %target <target>. Options: ${step.prompt.candidates.map(e => e.num).join(", ")}`
+      );
+    }
+
+    return;
   }
 
-  return;
-}
+  for (const msg of step.result.messages) {
+    send(game.room, msg);
+  }
 
-for (const msg of step.result.messages) {
-  send(game.room, msg);
-}
-
-entity.pendingAction = null;
+  entity.pendingAction = null;
 
   const winner = checkGameOver(game);
   if (game.phase === "ended") {
@@ -414,18 +414,18 @@ function handleAdvanceTurn(game: Game, user: User) {
   } else if (entity.pendingAction) {
     const step = resolveAction(game, entity);
 
-  if (step.done === false) {
-    sendPm(
-      user.name,
-      step.prompt.message
-    );
-    return;
-  }
-  
-  for (const msg of step.result.messages) {
-    send(game.room, msg);
-  }
-  
+    if (step.done === false) {
+      sendPm(
+        user.name,
+        step.prompt.message
+      );
+      return;
+    }
+
+    for (const msg of step.result.messages) {
+      send(game.room, msg);
+    }
+
 
     // Track kills
     for (const death of step.result.deaths) {
