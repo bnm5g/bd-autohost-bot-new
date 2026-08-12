@@ -20,15 +20,15 @@ export interface AbilityData {
   roll: string;
   damageType: "Physical" | "Magical" | "Varies" | "";
   actionType:
-    | "Standard"
-    | "Full"
-    | "Movement"
-    | "Swift"
-    | "Free"
-    | "Trigger"
-    | "Reaction"
-    | "Passive"
-    | "";
+  | "Standard"
+  | "Full"
+  | "Movement"
+  | "Swift"
+  | "Free"
+  | "Trigger"
+  | "Reaction"
+  | "Passive"
+  | "";
   targetAmount: number | "AoE";
   targetGroup: string;
   range: string;
@@ -79,6 +79,7 @@ export interface WeaponData {
 export const classes = new Map<string, ClassData>();
 export const weapons = new Map<string, WeaponData>();
 export const branches = new Map<string, string[]>();
+export const abilities = new Map<string, { ability: AbilityData; sourceName: string }>();
 export const WhatIs = new Map<string, string>();
 export const Reference = new Map<string, string>();
 
@@ -87,6 +88,28 @@ export function loadGameData() {
   loadBasicWeapons();
   loadReferences();
   console.log(`Loaded ${classes.size} classes, ${weapons.size} weapons`);
+}
+
+function registerClassAbilities() {
+  for (const cls of classes.values()) {
+    for (const ab of cls.abilities) {
+      abilities.set(toId(ab.name), {
+        ability: ab,
+        sourceName: cls.name,
+      });
+    }
+  }
+}
+
+function registerWeaponAbilities() {
+  for (const weapon of weapons.values()) {
+    for (const ab of weapon.abilities) {
+      abilities.set(toId(ab.name), {
+        ability: ab,
+        sourceName: weapon.name,
+      });
+    }
+  }
 }
 
 function loadBasicClasses() {
@@ -829,6 +852,7 @@ function loadBasicClasses() {
     ],
   };
   classes.set(toId("Skirmisher"), skirmisher);
+  registerClassAbilities()
 }
 
 function loadBasicWeapons() {
@@ -2064,7 +2088,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Totems"), totems);
   const gladius: WeaponData = {
     name: "Gladius",
-    branch: "Fighter",
+    branch: "Dueler",
     stats: {
       hp: "70",
       atk: "16",
@@ -2275,7 +2299,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Gladius"), gladius);
   const quarterstaff: WeaponData = {
     name: "Quarterstaff",
-    branch: "Fighter",
+    branch: "Dueler",
     stats: {
       hp: "65",
       atk: "16",
@@ -2474,7 +2498,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Quarterstaff"), quarterstaff);
   const tonfa: WeaponData = {
     name: "Tonfa",
-    branch: "Fighter",
+    branch: "Dueler",
     stats: {
       hp: "55",
       atk: "14",
@@ -2671,7 +2695,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Tonfa"), tonfa);
   const axe: WeaponData = {
     name: "Axe",
-    branch: "Knight",
+    branch: "Heavy",
     stats: {
       hp: "70",
       atk: "24",
@@ -2866,7 +2890,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Axe"), axe);
   const hammer: WeaponData = {
     name: "Hammer",
-    branch: "Knight",
+    branch: "Heavy",
     stats: {
       hp: "70",
       atk: "18",
@@ -3074,7 +3098,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Hammer"), hammer);
   const tomahawk: WeaponData = {
     name: "Tomahawk",
-    branch: "Knight",
+    branch: "Heavy",
     stats: {
       hp: "70",
       atk: "15",
@@ -3285,7 +3309,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Tomahawk"), tomahawk);
   const crown: WeaponData = {
     name: "Crown",
-    branch: "Mage",
+    branch: "Noble",
     stats: {
       hp: "65",
       atk: "12",
@@ -3497,7 +3521,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Crown"), crown);
   const katana: WeaponData = {
     name: "Katana",
-    branch: "Mage",
+    branch: "Noble",
     stats: {
       hp: "65",
       atk: "16",
@@ -3724,7 +3748,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Katana"), katana);
   const rapier: WeaponData = {
     name: "Rapier",
-    branch: "Mage",
+    branch: "Noble",
     stats: {
       hp: "60",
       atk: "14",
@@ -3924,7 +3948,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Rapier"), rapier);
   const shillelagh: WeaponData = {
     name: "Shillelagh",
-    branch: "Trophy",
+    branch: "Sorcerer",
     stats: {
       hp: "65",
       atk: "17",
@@ -4136,7 +4160,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Shillelagh"), shillelagh);
   const spellbook: WeaponData = {
     name: "Spellbook",
-    branch: "Sage",
+    branch: "Sorcerer",
     stats: {
       hp: "55",
       atk: "0",
@@ -4341,7 +4365,7 @@ function loadBasicWeapons() {
   weapons.set(toId("Spellbook"), spellbook);
   const talisman: WeaponData = {
     name: "Talisman",
-    branch: "Sage",
+    branch: "Sorcerer",
     stats: {
       hp: "60",
       atk: "4",
@@ -5758,6 +5782,7 @@ function loadBasicWeapons() {
     list.push(w.name);
     branches.set(toId(w.branch), list);
   }
+  registerWeaponAbilities()
 }
 
 function loadReferences() {
