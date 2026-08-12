@@ -47,10 +47,11 @@ import {
   type AttackStep,
 } from "../game/resolve.js";
 import { DIRECTION_LABELS } from "../game/state.js";
-import {    normalizeVoteMode,
-    pendingVoterIds,
-    runoffOptions,
-    tallyVotes,
+import {
+  normalizeVoteMode,
+  pendingVoterIds,
+  runoffOptions,
+  tallyVotes,
   voteOptionsFor,
 } from "../data/gamemodes.js";
 
@@ -789,12 +790,14 @@ function handleCancel(game: Game, user: User) {
 }
 
 function handleAdvanceTurn(game: Game, user: User) {
-  if (toId(user.name) !== toId(game.host)) {
-    return sendPm(user.name, "Only the host can advance turns.");
-  }
-
   const entity = getCurrentEntity(game);
-  if (!entity) return;
+  if (!entity) return sendPm(user.name, "No active turn.");
+  const isHost = toId(user.name) === toId(game.host);
+  const isSelf = toId(entity.name) === toId(user.name);
+
+  if (!isHost && !isSelf) {
+    return sendPm(user.name, "Only the host or current player can advance turns.");
+  }
 
   pushSnapshot(game);
 
